@@ -5,6 +5,14 @@ This was made for SpookyGriefing but I decided to release it since im quitting g
 
 Sorry for my grammar
 
+&emsp;
+
+Video of me scanning 65k ips on port 25565 with 9 VPS'es: 
+
+
+https://user-images.githubusercontent.com/52781429/200939529-a82cf869-561b-435f-a9d3-f9bb31bb9343.mp4
+
+
 If you need help setting it up, join my discord server: https://discord.isnow.dev
 
 Features:
@@ -14,6 +22,9 @@ Features:
   - Auto connection thru the client start server module (requires it being online 24/7 on each client and providing client ips at vpses.txt)
   - Auto converting CIDR notation to an ip-range
   - Status & Stop command at the master server
+
+
+
 
 How does this work?
   - Server creates a SocketServer and a REST api on the Master Server
