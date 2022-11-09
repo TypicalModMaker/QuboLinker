@@ -39,7 +39,6 @@ public class QuboServer {
         System.out.println(" \\____ $$$ \\______/ |_______/  \\______/       |________/|______/|__/  \\__/|__/  \\__/|________/|__/  |__/");
         System.out.println("      \\__/                                                                                              ");
         System.out.println("A Private project made with " + Color.ANSI_RED + "❤" + Color.ANSI_RESET + " by Isnow");
-        System.out.println("Spooky, if you leak this ill chop your nuts off.");
         System.out.println("Creating outputs directory.");
         Path currentRelativePath = Paths.get("");
         String s = currentRelativePath.toAbsolutePath().toString();

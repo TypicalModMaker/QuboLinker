@@ -33,7 +33,7 @@ public class FileUtil {
         writer.write("|  $$$$$$/|  $$$$$$/| $$$$$$$/|  $$$$$$/      | $$$$$$$$ /$$$$$$| $$ \\  $$| $$ \\  $$| $$$$$$$$| $$  | $$" + "\n");
         writer.write(" \\____ $$$ \\______/ |_______/  \\______/       |________/|______/|__/  \\__/|__/  \\__/|________/|__/  |__/" + "\n");
         writer.write("      \\__/                                                                                              " + "\n");
-        writer.write("Made by Isnow for my love, Spooky." + "\n");
+        writer.write("Made by Isnow." + "\n");
         writer.write("Started at " + new SimpleDateFormat("yyyy.MM.dd 'at' HH:mm:ss").format(new Date(System.currentTimeMillis())) + "\n");
         writer.close();
     }
