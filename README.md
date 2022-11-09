@@ -16,7 +16,7 @@ https://user-images.githubusercontent.com/52781429/200939529-a82cf869-561b-435f-
 If you need help setting it up, join my discord server: https://discord.isnow.dev
 
 Features:
-  - Auto balancing an IP-Rangeeach
+  - Auto balancing an IP-Range
   - Auto reconnect on client when master server loses connection to internet or crashes, clients wont stop until they send all the results.
   - Sending all the output to the mastserver so no need to check output on each server
   - Auto connection thru the client start server module (requires it being online 24/7 on each client and providing client ips at vpses.txt)
