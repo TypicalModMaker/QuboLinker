@@ -12,11 +12,11 @@ Features:
   - Auto reconnect on client when master server loses connection to internet or crashes, clients wont stop until they send all the results.
   - Sending all the output to the mastserver so no need to check output on each server
   - Auto connection thru the start socketserver module (requires being online 24/7 on each client and providing client ips at vpses.txt)
-  - Auto converting cidr notation to an ip-range
+  - Auto converting CIDR notation to an ip-range
   - Status & Stop command at the master server
 
 How does this work?
-  - Server creates a socket and a REST api on the Master Server
+  - Server creates a SocketServer and a REST api on the Master Server
   - Clients connect to the socket server and listens for scanning requests
   - When a client recieves specific string it beggins scanning
   - Each time a client gets a hit from the qubo output it will send it to the Rest API (Sockets are skipping output for some reason, im too dumb to figure it out)
