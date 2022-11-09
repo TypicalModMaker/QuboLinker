@@ -36,7 +36,7 @@ How does this work?
 
 How to set it up:
   - Download java 11 on every single VPS including the Master Server.
-  - Download quboscanner on each single VPS and name it as qubo.jar
+  - Download quboscanner on each single VPS and name it as qubo.jar (https://github.com/replydev/Quboscanner/releases/download/0.3.7/quboscanner-0.3.7-jar-with-dependencies.jar)
   - (OPTIONAL) Download client start server on every scanning VPS and create a screen to run it 24/7 (java -jar ClientStartServer.jar vpsName)
   - (OPTIONAL) Create vpses.txt at the Master Server containing all the vpses ips splitted by new lines
   - Run Server.jar on the Master Server
