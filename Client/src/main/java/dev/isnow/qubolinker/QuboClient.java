@@ -26,6 +26,8 @@ public class QuboClient {
     @Setter
     private boolean reconnect = true;
 
+    @Setter
+    private boolean alreadyRecievedScanReqBefore;
 
     private final Queue<String> queuedHits = new ConcurrentLinkedQueue<>();
     public QuboClient(String[] args) {

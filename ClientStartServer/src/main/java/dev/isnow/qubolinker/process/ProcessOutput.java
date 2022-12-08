@@ -29,7 +29,7 @@ public class ProcessOutput
 
     private void startClient(String vpsIP, String vpsName) {
         try {
-            ProcessBuilder ps = new ProcessBuilder("bash", "-c", "java -jar Client-1.0-SNAPSHOT.jar " + vpsIP + " " + vpsName);
+            ProcessBuilder ps = new ProcessBuilder("bash", "-c", "java -jar Client.jar " + vpsIP + " " + vpsName);
             ps.redirectErrorStream(true);
             process = ps.start();
         }

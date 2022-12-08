@@ -48,10 +48,19 @@ public class ServerThread {
                               if (QuboClient.getInstance().getProcessOutput() != null) {
                                   QuboClient.getInstance().getProcessOutput().stopProcess();
                               }
+                              // Prevent infinite client instance creation when stopped when using auto connect + turning off main server before saying "YES"
+                              if(QuboClient.getInstance().isAlreadyRecievedScanReqBefore()) {
+                                  QuboClient.getInstance().setReconnect(false);
+                                  client.close();
+                                  System.exit(0);
+                                  return;
+                              }
+
                               System.out.println("[INFO] Received a scan request, " + ipStart + "-" + ipEnd + " Ports: " + portrange + " Threads: " + threads + " Timeout: " + timeout);
                               QuboClient.getInstance().setProcessOutput(new ProcessOutput(ipStart, ipEnd, portrange, threads, timeout));
                               Thread t2 = new Thread(() -> QuboClient.getInstance().getProcessOutput().run());
                               t2.start();
+                              QuboClient.getInstance().setAlreadyRecievedScanReqBefore(true);
                           });
                           break;
                       case 2:

@@ -25,6 +25,7 @@ public class QuboServer {
     private final ClientListener clientListener;
     private final File scanningFile;
     private static QuboServer instance;
+    private File outputFolder;
 
     private long startTime;
     public QuboServer() {
@@ -39,10 +40,12 @@ public class QuboServer {
         System.out.println(" \\____ $$$ \\______/ |_______/  \\______/       |________/|______/|__/  \\__/|__/  \\__/|________/|__/  |__/");
         System.out.println("      \\__/                                                                                              ");
         System.out.println("A Private project made with " + Color.ANSI_RED + "❤" + Color.ANSI_RESET + " by Isnow");
-        System.out.println("Creating outputs directory.");
+        System.out.println("Creating outputs tory.");
+
         Path currentRelativePath = Paths.get("");
         String s = currentRelativePath.toAbsolutePath().toString();
-        File outputFolder = new File(s, "outputs/");
+        outputFolder = new File(s, "outputs/");
+
         if(!outputFolder.exists()) {
             boolean done = outputFolder.mkdir();
             if(done) {
