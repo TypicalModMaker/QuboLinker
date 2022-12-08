@@ -5,18 +5,29 @@ This was made for SpookyGriefing but I decided to release it since im quitting g
 
 Sorry for my grammar
 
+&emsp;
+
+Video of me scanning 65k ips on port 25565 with 9 VPS'es: 
+
+
+https://user-images.githubusercontent.com/52781429/200939529-a82cf869-561b-435f-a9d3-f9bb31bb9343.mp4
+
+
 If you need help setting it up, join my discord server: https://discord.isnow.dev
 
 Features:
-  - Auto balancing each IP-Range
+  - Auto balancing an IP-Range
   - Auto reconnect on client when master server loses connection to internet or crashes, clients wont stop until they send all the results.
   - Sending all the output to the mastserver so no need to check output on each server
-  - Auto connection thru the start socketserver module (requires being online 24/7 on each client and providing client ips at vpses.txt)
-  - Auto converting cidr notation to an ip-range
+  - Auto connection thru the client start server module (requires it being online 24/7 on each client and providing client ips at vpses.txt)
+  - Auto converting CIDR notation to an ip-range
   - Status & Stop command at the master server
 
+
+
+
 How does this work?
-  - Server creates a socket and a REST api on the Master Server
+  - Server creates a SocketServer and a REST api on the Master Server
   - Clients connect to the socket server and listens for scanning requests
   - When a client recieves specific string it beggins scanning
   - Each time a client gets a hit from the qubo output it will send it to the Rest API (Sockets are skipping output for some reason, im too dumb to figure it out)
@@ -25,7 +36,7 @@ How does this work?
 
 How to set it up:
   - Download java 11 on every single VPS including the Master Server.
-  - Download quboscanner on each single VPS and name it as qubo.jar
+  - Download quboscanner on each single VPS and name it as qubo.jar (https://github.com/replydev/Quboscanner/releases/download/0.3.7/quboscanner-0.3.7-jar-with-dependencies.jar)
   - (OPTIONAL) Download client start server on every scanning VPS and create a screen to run it 24/7 (java -jar ClientStartServer.jar vpsName)
   - (OPTIONAL) Create vpses.txt at the Master Server containing all the vpses ips splitted by new lines
   - Run Server.jar on the Master Server
