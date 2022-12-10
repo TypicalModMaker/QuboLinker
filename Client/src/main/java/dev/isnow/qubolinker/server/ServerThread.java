@@ -121,7 +121,7 @@ public class ServerThread {
     }
 
     public void sendHit(final String line) {
-        if(line.contains("Ochrona DDoS:") || line.contains("Craftserve.pl - wydajny hosting Minecraft!Testuj za darmo przez 24h!") || line.contains("Serwer jest wylaczony") || line.contains("start.falix.cc") || line.contains("start.Falix.cc") || line.contains("Powered by FalixNodes.net") || line.contains("Ochrona DDoS") || line.contains("Blad pobierania statusu. Polacz sie bezposrednio") || line.contains("Please refer to our documentation at docs.tcpshield.com")) {
+        if(line.contains("www.MineHost.pl") || line.contains("Ochrona DDoS:") || line.contains("Craftserve.pl - wydajny hosting Minecraft!Testuj za darmo przez 24h!") || line.contains("Serwer jest wylaczony") || line.contains("start.falix.cc") || line.contains("start.Falix.cc") || line.contains("Powered by FalixNodes.net") || line.contains("Ochrona DDoS") || line.contains("Blad pobierania statusu. Polacz sie bezposrednio") || line.contains("Please refer to our documentation at docs.tcpshield.com")) {
             return;
         }
         Thread t = new Thread(() -> {
