@@ -41,9 +41,16 @@ public class ServerListener {
 
                 // Prevent infinite client instance creation when stopped when using auto connect + turning off main server before saying "YES"
                 client.postDisconnect(() -> {
-                    if(processOutput.isAlive() && !processOutput.isScanning) {
-                        processOutput.kill();
-                    }
+                    System.out.println("[DEBUG] " + finalAddress1 + " Disconnected!");
+                    Thread tr = new Thread(() -> {
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException ignored) {}
+                        if(processOutput.isAlive() && !processOutput.isScanning) {
+                            processOutput.kill();
+                        }
+                    });
+                    tr.start();
                 });
             });
             server.bind("0.0.0.0", port);
