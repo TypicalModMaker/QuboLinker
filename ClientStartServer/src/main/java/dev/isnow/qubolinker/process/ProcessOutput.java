@@ -3,13 +3,13 @@ package dev.isnow.qubolinker.process;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Objects;
 
 public class ProcessOutput
         implements Runnable {
 
     private static Process process;
 
-    public boolean isScanning;
 
     public ProcessOutput(String vpsIP, String vpsName) {
         startClient(vpsIP, vpsName);
@@ -22,33 +22,23 @@ public class ProcessOutput
             try {
                 String line = bufferedReader.readLine();
                 if (line == null) continue;
-                if(line.contains("[INFO] Received a scan request")) {
-                    isScanning = true;
-                }
-                System.out.println(line);
+                System.out.println(line); // Does not work, I have no idea why, if you know how to fix it please make a pull request
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    public boolean isAlive() {
-        return process.isAlive();
-    }
-
-    public void kill() {
-        process.destroy();
-    }
-
     private void startClient(String vpsIP, String vpsName) {
-        try {
+        Thread t2 = new Thread(() -> {
             ProcessBuilder ps = new ProcessBuilder("bash", "-c", "java -jar Client.jar " + vpsIP + " " + vpsName);
             ps.redirectErrorStream(true);
-            process = ps.start();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            System.exit(-1);
-        }
+            try {
+                process = ps.start();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        t2.start();
     }
 }

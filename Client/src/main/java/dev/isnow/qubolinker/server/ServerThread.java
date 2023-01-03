@@ -91,6 +91,12 @@ public class ServerThread {
 
                 client.postDisconnect(() -> {
                     System.out.println("[INFO] Lost Connection to the server...");
+                    if(QuboClient.getInstance().getProcessOutput() == null) {
+                        QuboClient.getInstance().setReconnect(false);
+                        client.close();
+                        System.exit(0);
+                        return;
+                    }
                     if (QuboClient.getInstance().isReconnect())  {
                         QuboClient.getInstance().setServerThread(new ServerThread(ip ,port));
                         client.close();

@@ -28,6 +28,7 @@ public class ServerListener {
                 client.readStringAlways(message -> {
                     try {
                         if(message.equals("QUBOLINKER-AUTHSTRING-01")) {
+                            System.out.println("[DEBUG] Starting Client.jar");
                             processOutput = new ProcessOutput(finalAddress1.toString().split(":")[0].replace("/", ""), vpsName);
                             client.close();
                         } else {
@@ -42,15 +43,6 @@ public class ServerListener {
                 // Prevent infinite client instance creation when stopped when using auto connect + turning off main server before saying "YES"
                 client.postDisconnect(() -> {
                     System.out.println("[DEBUG] " + finalAddress1 + " Disconnected!");
-                    Thread tr = new Thread(() -> {
-                        try {
-                            Thread.sleep(2000);
-                        } catch (InterruptedException ignored) {}
-                        if(processOutput.isAlive() && !processOutput.isScanning) {
-                            processOutput.kill();
-                        }
-                    });
-                    tr.start();
                 });
             });
             server.bind("0.0.0.0", port);

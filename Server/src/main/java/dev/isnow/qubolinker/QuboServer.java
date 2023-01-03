@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 @Getter
 public class QuboServer {
@@ -40,7 +41,7 @@ public class QuboServer {
         System.out.println(" \\____ $$$ \\______/ |_______/  \\______/       |________/|______/|__/  \\__/|__/  \\__/|________/|__/  |__/");
         System.out.println("      \\__/                                                                                              ");
         System.out.println("A Private project made with " + Color.ANSI_RED + "❤" + Color.ANSI_RESET + " by Isnow");
-        System.out.println("Creating outputs tory.");
+        System.out.println("Creating outputs directory.");
 
         Path currentRelativePath = Paths.get("");
         String s = currentRelativePath.toAbsolutePath().toString();
@@ -181,8 +182,7 @@ public class QuboServer {
                         client.onConnect(() -> {
                             try {
                                 Thread.sleep(10);
-                            } catch (InterruptedException ignored) {
-                            }
+                            } catch (InterruptedException ignored) {}
                             Packet.builder().putString("QUBOLINKER-AUTHSTRING-01").queueAndFlush(client);
 
                             client.postDisconnect(() -> Thread.currentThread().interrupt());
@@ -192,27 +192,28 @@ public class QuboServer {
                     });
                     clientThread.start();
                 }
+
             }
             System.out.println("Starting ClientListener...");
             clientListener = new ClientListener(1337);
-            System.out.println("Waiting for clients to connect... Type YES when you are ready to scan");
+            System.out.println("Waiting for clients to connect...");
 
-            ready = "NO";
-            try {
-                ready = reader.readLine();
-            } catch (IOException e) {
-                System.exit(0);
-            }
+            String finalStart = start;
+            String finalEnd = end;
+            String finalPortrange = portrange;
+            String finalThreads = threads;
+            String finalTimeout = timeout;
 
-            if (!ready.equalsIgnoreCase("YES")) {
-                System.out.println("Imagine not being ready");
-                System.exit(0);
-            } else {
+            Thread scanThread = new Thread(() -> {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 int clients = getClientListener().getClients().size();
                 System.out.println("Splitting the IP Range to " + getClientListener().getClients().size());
-
                 try {
-                    List<IPRange> ipRangeList = IPRange.split(InetAddress.getByName(start), InetAddress.getByName(end), clients);
+                    List<IPRange> ipRangeList = IPRange.split(InetAddress.getByName(finalStart), InetAddress.getByName(finalEnd), clients);
                     if (clients == 0) {
                         System.out.println("No clients connected!");
                         System.exit(0);
@@ -222,7 +223,7 @@ public class QuboServer {
                         String formattedIpRange = IPRange.formatted(ipRange);
                         quboClient.setCurrentScanningIpRange(formattedIpRange);
                         System.out.println("Broadcasting " + formattedIpRange + " to " + quboClient.getName());
-                        clientListener.sendIPRange(quboClient.getClient(), ipRange.getStart().getHostAddress(), ipRange.getEnd().getHostAddress(), portrange, threads, timeout);
+                        clientListener.sendIPRange(quboClient.getClient(), ipRange.getStart().getHostAddress(), ipRange.getEnd().getHostAddress(), finalPortrange, finalThreads, finalTimeout);
                         ipRangeList.remove(0);
                     }
                     startTime = System.currentTimeMillis();
@@ -236,12 +237,13 @@ public class QuboServer {
                             clientListener.getClients().values().forEach(quboClient -> Packet.builder().putByte(3).putString("QUBOLINKER-1337").queueAndFlush(quboClient.getClient()));
                         }
                     }
-                } catch (UnknownHostException e) {
+                } catch (IOException e) {
                     System.out.println("Failed to split the IP Range.");
                     System.exit(0);
-                } catch (IOException ignored) {
                 }
-            }
+            });
+            scanThread.start();
+
         }
     }
 
