@@ -9,6 +9,8 @@ public class ProcessOutput
 
     private static Process process;
 
+    public boolean isScanning;
+
     public ProcessOutput(String vpsIP, String vpsName) {
         startClient(vpsIP, vpsName);
     }
@@ -20,11 +22,22 @@ public class ProcessOutput
             try {
                 String line = bufferedReader.readLine();
                 if (line == null) continue;
+                if(line.contains("[INFO] Received a scan request")) {
+                    isScanning = true;
+                }
                 System.out.println(line);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public boolean isAlive() {
+        return process.isAlive();
+    }
+
+    public void kill() {
+        process.destroy();
     }
 
     private void startClient(String vpsIP, String vpsName) {
