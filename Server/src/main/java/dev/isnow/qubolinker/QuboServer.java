@@ -6,7 +6,7 @@ import dev.isnow.qubolinker.client.impl.QuboClient;
 import dev.isnow.qubolinker.util.CIDRUtils;
 import dev.isnow.qubolinker.util.Color;
 import dev.isnow.qubolinker.util.FileUtil;
-import dev.isnow.qubolinker.util.IPRange;
+import dev.isnow.qubolinker.util.NewIPRangeSplitter;
 import lombok.Getter;
 
 import java.io.BufferedReader;
@@ -18,15 +18,16 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Map;
 
 @Getter
 public class QuboServer {
     private final ClientListener clientListener;
     private final File scanningFile;
     private static QuboServer instance;
-    private File outputFolder;
+    private final File outputFolder;
 
     private long startTime;
     public QuboServer() {
@@ -84,39 +85,54 @@ public class QuboServer {
                 }
             } catch (IOException ignored) {}
         } else {
-            System.out.println("What IP range would you like to scan?");
+            System.out.println("What IP range(s) would you like to scan?");
 
-            String ipRangeInput = "1.1.1.1";
+            StringBuilder ipRangeInput = new StringBuilder("1.1.1.1");
             try {
-                ipRangeInput = reader.readLine();
-                ipRangeInput = ipRangeInput.replaceAll(",", ".");
+                ipRangeInput = new StringBuilder(reader.readLine());
             } catch (IOException e) {
                 System.out.println("Invalid IpRange");
                 System.exit(0);
             }
 
-            if (ipRangeInput.contains(" ")) {
+            if (ipRangeInput.toString().contains(" ")) {
                 System.out.println("IPRange cant contain any spaces!");
                 System.exit(0);
             }
-            if (ipRangeInput.contains("/")) {
-                try {
-                    CIDRUtils converted = new CIDRUtils(ipRangeInput);
-                    ipRangeInput = converted.getNetworkAddress() + "-" + converted.getBroadcastAddress();
-                } catch (UnknownHostException exception) {
-                    System.out.println("INVALID CIDR");
-                    System.exit(0);
+            if (ipRangeInput.toString().contains("/")) {
+                if (ipRangeInput.toString().contains(",")) {
+                    List<String> split = new ArrayList<>(Arrays.asList(ipRangeInput.toString().split(",")));
+                    ipRangeInput = new StringBuilder();
+                    for(String cidr : split) {
+                        try {
+                            CIDRUtils converted = new CIDRUtils(cidr);
+                            String convertedSting = converted.getNetworkAddress() + "-" + converted.getBroadcastAddress();
+                            ipRangeInput.append(convertedSting).append(",");
+                        } catch (UnknownHostException e) {
+                            System.out.println("INVALID CIDR");
+                            System.exit(0);
+                        }
+                    }
+                } else {
+                    try {
+                        CIDRUtils converted = new CIDRUtils(ipRangeInput.toString());
+                        ipRangeInput = new StringBuilder(converted.getNetworkAddress() + "-" + converted.getBroadcastAddress());
+                    } catch (UnknownHostException exception) {
+                        System.out.println("INVALID CIDR");
+                        System.exit(0);
+                    }
                 }
             }
-            String start = "158.69.0.0", end = "158.69.255.255";
-            try {
-                start = ipRangeInput.split("-")[0];
-                end = ipRangeInput.split("-")[1];
-            } catch (ArrayIndexOutOfBoundsException e) {
-                System.out.println("Invalid IpRange");
-                System.exit(0);
+            ipRangeInput.setLength(ipRangeInput.length() - 1);
+
+            ArrayList<String> scanips = new ArrayList<>();
+            if (!ipRangeInput.toString().contains(",")) {
+                scanips.add(ipRangeInput.toString());
+            } else {
+                scanips.addAll(Arrays.asList(ipRangeInput.toString().split(",")));
             }
-            scanningFile = new File(outputFolder, "qubolinker-" + start + "-" + end + ".txt");
+
+            scanningFile = new File(outputFolder, "qubolinker-" + scanips.get(0) + "-" + scanips.get(scanips.size() - 1) + ".txt");
             try {
                 scanningFile.delete();
                 scanningFile.createNewFile();
@@ -135,6 +151,10 @@ public class QuboServer {
                 System.out.println("Invalid port range");
                 System.exit(0);
             }
+            if (portrange.equals("")) {
+                System.out.println("PortRange cant be empty");
+                System.exit(0);
+            }
             if (portrange.contains(" ")) {
                 System.out.println("PortRange cant contain any spaces!");
                 System.exit(0);
@@ -149,6 +169,10 @@ public class QuboServer {
                 System.out.println("Invalid threads amount");
                 System.exit(0);
             }
+            if (threads.equals("")) {
+                System.out.println("Threads amount cannot be empty!");
+                System.exit(0);
+            }
             System.out.println("What timeout would you like to use? [PER CLIENT]");
             String timeout = "1000";
 
@@ -158,7 +182,10 @@ public class QuboServer {
                 System.out.println("Invalid timeout amount");
                 System.exit(0);
             }
-
+            if (timeout.equals("")) {
+                System.out.println("Timeout amount cannot be empty!");
+                System.exit(0);
+            }
             System.out.println("Do you wish to autoConnect VPS'es?");
 
             String ready = "NO";
@@ -198,8 +225,6 @@ public class QuboServer {
             clientListener = new ClientListener(1337);
             System.out.println("Waiting for clients to connect...");
 
-            String finalStart = start;
-            String finalEnd = end;
             String finalPortrange = portrange;
             String finalThreads = threads;
             String finalTimeout = timeout;
@@ -213,19 +238,23 @@ public class QuboServer {
                 int clients = getClientListener().getClients().size();
                 System.out.println("Splitting the IP Range to " + getClientListener().getClients().size());
                 try {
-                    List<IPRange> ipRangeList = IPRange.split(InetAddress.getByName(finalStart), InetAddress.getByName(finalEnd), clients);
                     if (clients == 0) {
                         System.out.println("No clients connected!");
                         System.exit(0);
                     }
-                    for (QuboClient quboClient : getClientListener().getClients().values()) {
-                        IPRange ipRange = ipRangeList.get(0);
-                        String formattedIpRange = IPRange.formatted(ipRange);
-                        quboClient.setCurrentScanningIpRange(formattedIpRange);
-                        System.out.println("Broadcasting " + formattedIpRange + " to " + quboClient.getName());
-                        clientListener.sendIPRange(quboClient.getClient(), ipRange.getStart().getHostAddress(), ipRange.getEnd().getHostAddress(), finalPortrange, finalThreads, finalTimeout);
-                        ipRangeList.remove(0);
+                    List<String> splitted = NewIPRangeSplitter.splitIpRanges(scanips, clients);
+                    List<List<String>> perClient = NewIPRangeSplitter.splitIpRangesToClients(splitted, clients);
+
+                    int index = 0;
+                    for (String key : clientListener.getClients().keySet()) {
+                        QuboClient client = clientListener.getClients().get(key);
+                        List<String> list = perClient.get(index);
+                        client.setCurrentScanningIpRanges(list);
+                        System.out.println("Broadcasting " + String.join(",", list) + " to " + client.getName());
+                        clientListener.sendIPRanges(client.getClient(), list, finalPortrange, finalThreads, finalTimeout);
+                        ++index;
                     }
+
                     startTime = System.currentTimeMillis();
                     String line;
                     while ((line = reader.readLine()) != null) {

@@ -1,15 +1,12 @@
 package dev.isnow.qubolinker.server;
 
 import com.github.simplenet.Server;
-import dev.isnow.qubolinker.process.ProcessOutput;
 
 import java.io.IOException;
 import java.net.SocketAddress;
 
 public class ServerListener {
     private Server server;
-
-    private ProcessOutput processOutput;
 
     public ServerListener(int port, String vpsName) {
         Thread t = new Thread(() -> {
@@ -29,7 +26,15 @@ public class ServerListener {
                     try {
                         if(message.equals("QUBOLINKER-AUTHSTRING-01")) {
                             System.out.println("[DEBUG] Starting Client.jar");
-                            processOutput = new ProcessOutput(finalAddress1.toString().split(":")[0].replace("/", ""), vpsName);
+                            Thread t2 = new Thread(() -> {
+                                ProcessBuilder ps = new ProcessBuilder("bash", "-c", "java -jar Client.jar " + finalAddress1.toString().split(":")[0].replace("/", "") + " " + vpsName);
+                                try {
+                                    ps.start();
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+                            t2.start();
                             client.close();
                         } else {
                             System.out.println("[INFO] Received a weird message from " + finalAddress1 + " message: " + message);

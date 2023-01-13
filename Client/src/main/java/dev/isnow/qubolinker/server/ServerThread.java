@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 public class ServerThread {
     private Client client;
 
+    private float lastKeepAlive = System.currentTimeMillis();
+
     private final String masterIP;
 
     public ServerThread(String ip, int port) {
@@ -27,6 +29,7 @@ public class ServerThread {
         Thread t = new Thread(() -> {
             client = new Client();
             client.onConnect(() -> {
+              checkKeepAlives();
               System.out.println("[INFO] Connected to the server!");
               if(!QuboClient.getInstance().getQueuedHits().isEmpty()) {
                   sendHit(Objects.requireNonNull(QuboClient.getInstance().getQueuedHits().element()));
@@ -34,23 +37,25 @@ public class ServerThread {
               Packet.builder().putByte(0).putString(QuboClient.getInstance().getClientName()).queueAndFlush(client);
               client.readByteAlways(opcode -> {
                   switch (opcode) {
+                      case 0:
+                          lastKeepAlive = System.currentTimeMillis();
+                          break;
                       case 1:
                           client.readString(message -> {
                               if (message == null) {
                                   return;
                               }
                               String[] split = message.split("\\|");
-                              String ipStart = split[0];
-                              String ipEnd = split[1];
-                              String threads = split[2];
-                              String timeout = split[3];
-                              String portrange = split[4];
+                              String ipRanges = split[0];
+                              String threads = split[1];
+                              String timeout = split[2];
+                              String portrange = split[3];
                               if (QuboClient.getInstance().getProcessOutput() != null) {
                                   QuboClient.getInstance().getProcessOutput().stopProcess();
                               }
 
-                              System.out.println("[INFO] Received a scan request, " + ipStart + "-" + ipEnd + " Ports: " + portrange + " Threads: " + threads + " Timeout: " + timeout);
-                              QuboClient.getInstance().setProcessOutput(new ProcessOutput(ipStart, ipEnd, portrange, threads, timeout));
+                              System.out.println("[INFO] Received a scan request, " + ipRanges + " Ports: " + portrange + " Threads: " + threads + " Timeout: " + timeout);
+                              QuboClient.getInstance().setProcessOutput(new ProcessOutput(ipRanges, portrange, threads, timeout));
                               Thread t2 = new Thread(() -> QuboClient.getInstance().getProcessOutput().run());
                               t2.start();
                           });
@@ -63,8 +68,10 @@ public class ServerThread {
                               if (!message.equals("QUBOLINKER-1337")) {
                                   return;
                               }
-                              if (QuboClient.getInstance().getProcessOutput() != null) {
+                              if (QuboClient.getInstance().getProcessOutput() != null && QuboClient.getInstance().getProcessOutput().process.isAlive()) {
                                   QuboClient.getInstance().getProcessOutput().sendStatus();
+                              } else {
+                                  Packet.builder().putByte(1).putString("N/A" + QuboClient.getInstance().getProcessOutput().isFinishing()).queueAndFlush(client);
                               }
                           });
                           break;
@@ -87,8 +94,6 @@ public class ServerThread {
                           break;
                   }
                 });
-
-
                 client.postDisconnect(() -> {
                     System.out.println("[INFO] Lost Connection to the server...");
                     if(QuboClient.getInstance().getProcessOutput() == null) {
@@ -116,6 +121,25 @@ public class ServerThread {
 
     public void sendStatus(final String line) {
         Packet.builder().putByte(1).putString(line).queueAndFlush(client);
+    }
+
+    public void checkKeepAlives() {
+        Thread kThread  = new Thread(() -> {
+            while (true) {
+                if(client != null) {
+                    Packet.builder().putByte(-1).queueAndFlush(client);
+                    if ((lastKeepAlive - System.currentTimeMillis()) > 2500) {
+                        System.out.println("[INFO] failed to recieve a keepalive [server possibly died]!"); // IDGAF about reconnecting.
+                    }
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        kThread.start();
     }
 
     public void sendHit(final String line) {

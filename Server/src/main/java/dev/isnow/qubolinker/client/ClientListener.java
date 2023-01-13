@@ -11,6 +11,7 @@ import lombok.Getter;
 
 import java.io.IOException;
 import java.net.SocketAddress;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +24,7 @@ public class ClientListener {
 
 
     public ClientListener(int port) {
+        checkKeepAlives();
         Thread t = new Thread(() -> {
             new ApiController();
             server = new Server();
@@ -75,6 +77,13 @@ public class ClientListener {
                                 } catch (Exception ignored) {};
                             });
                             break;
+                        case -1:
+                            Optional<QuboClient> clientQubo1 = clients.values().stream().filter(quboClient1 -> quboClient1.getIp() == finalAddress1).findFirst();
+                            if(clientQubo1.isEmpty()) {
+                                break;
+                            }
+                            clientQubo1.get().setLastKeepaliveTime(System.currentTimeMillis());
+                            break;
                         default:
                             System.out.println("[INFO] " + "Received a weird message from a client " + finalAddress1 + ", byte:" + opcode + ", trying to parse string!");
                             try {
@@ -93,7 +102,32 @@ public class ClientListener {
     }
 
 
-    public void sendIPRange(Client client, String ipStart, String ipEnd, String portrange, String threads, String timeout) {
-        Packet.builder().putByte(1).putString(ipStart + "|" + ipEnd + "|" + threads + "|" + timeout + "|" + portrange).queueAndFlush(client);
+    public void checkKeepAlives() {
+        Thread kThread  = new Thread(() -> {
+            while (true) {
+                for (QuboClient client : clients.values()) {
+                    Packet.builder().putByte(0).queueAndFlush(client.getClient());
+                    if ((client.getLastKeepaliveTime() - System.currentTimeMillis()) > 2500) {
+                        System.out.println("[INFO] " + client.getName() + " failed to response to the keepalives [possibly finished]! Clients Left: " + clients.size());
+                        clients.remove(client.getName());
+                        if (QuboServer.getInstance().getClientListener().getClients().size() == 0) {
+                            System.out.println("[INFO] All clients finished scanning, output saved to " + QuboServer.getInstance().getScanningFile().getAbsolutePath());
+                            System.out.println("[INFO] Took " + ((System.currentTimeMillis() - QuboServer.getInstance().getStartTime()) / 1000.0) + " seconds to complete every scan!");
+                            server.close();
+                            System.exit(0);
+                        }
+                    }
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        kThread.start();
+    }
+    public void sendIPRanges(Client client, List<String> ranges, String portrange, String threads, String timeout) {
+        Packet.builder().putByte(1).putString(String.join(",", ranges) + "|" + threads + "|" + timeout + "|" + portrange).queueAndFlush(client);
     }
 }
