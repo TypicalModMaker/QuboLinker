@@ -3,10 +3,7 @@ package dev.isnow.qubolinker;
 import com.github.simplenet.packet.Packet;
 import dev.isnow.qubolinker.client.ClientListener;
 import dev.isnow.qubolinker.client.impl.QuboClient;
-import dev.isnow.qubolinker.util.CIDRUtils;
-import dev.isnow.qubolinker.util.Color;
-import dev.isnow.qubolinker.util.FileUtil;
-import dev.isnow.qubolinker.util.NewIPRangeSplitter;
+import dev.isnow.qubolinker.util.*;
 import lombok.Getter;
 
 import java.io.BufferedReader;
@@ -200,30 +197,51 @@ public class QuboServer {
                 ips = FileUtil.getVPSList();
             }
 
-
-            if (ips != null) {
-                System.out.println("[DEBUG] Connecting to the vpses...");
-                for (InetAddress ip : ips) {
-                    Thread clientThread = new Thread(() -> {
-                        com.github.simplenet.Client client = new com.github.simplenet.Client();
-                        client.onConnect(() -> {
-                            try {
-                                Thread.sleep(10);
-                            } catch (InterruptedException ignored) {}
-                            Packet.builder().putString("QUBOLINKER-AUTHSTRING-01").queueAndFlush(client);
-
-                            client.postDisconnect(() -> Thread.currentThread().interrupt());
-                        });
-
-                        client.connect(ip.getHostAddress(), 1337);
-                    });
-                    clientThread.start();
-                }
-
-            }
             System.out.println("Starting ClientListener...");
             clientListener = new ClientListener(1337);
             System.out.println("Waiting for clients to connect...");
+
+            if (ips != null) {
+                System.out.println("[DEBUG] Connecting to the vpses...");
+                int count = 1;
+                String masterIP = IPUtils.getIP();
+                for (InetAddress ip : ips) {
+                    int finalCount = count;
+                    ProcessBuilder ps = new ProcessBuilder("ssh", "-o", "StrictHostKeyChecking=no", "root@" + ip.getHostAddress(), "-i", "/root/.ssh/id_rsa", "-t", "screen", "-d", "-m", "java", "-jar", "Client.jar", masterIP, "VPS" + String.valueOf(finalCount));
+                    try {
+                        ps.start();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+//                    Thread clientThread = new Thread(() -> {
+////                        com.github.simplenet.Client client = new com.github.simplenet.Client();
+////                        client.onConnect(() -> {
+////                            try {
+////                                Thread.sleep(10);
+////                            } catch (InterruptedException ignored) {}
+////                            Packet.builder().putString("QUBOLINKER-AUTHSTRING-01").queueAndFlush(client);
+////
+////                            client.postDisconnect(() -> Thread.currentThread().interrupt());
+////                        });
+////
+////                        client.connect(ip.getHostAddress(), 1337);
+//                        ProcessBuilder ps = new ProcessBuilder("ssh", "-o", "StrictHostKeyChecking=no", "root@" + ip.getHostAddress(), "-i", "/root/.ssh/id_rsa", "-t", "screen", "-d", "-m", "java", "-jar", "Client.jar", masterIP, "VPS" + String.valueOf(finalCount));
+//                        try {
+//                            ps.start();
+//                        } catch (IOException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                    });
+//                    clientThread.start();
+                    count++;
+                }
+
+            }
 
             String finalPortrange = portrange;
             String finalThreads = threads;
@@ -231,7 +249,7 @@ public class QuboServer {
 
             Thread scanThread = new Thread(() -> {
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
