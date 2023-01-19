@@ -17,7 +17,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 @Getter
 public class QuboServer {
@@ -141,8 +140,12 @@ public class QuboServer {
             }
 
             try {
-                scanningFile.delete();
-                scanningFile.createNewFile();
+                boolean deleted = scanningFile.delete();
+                boolean newFile = scanningFile.createNewFile();
+                if(!deleted || !newFile) {
+                    System.out.println("Couldn't create new scanning file.");
+                    System.exit(0);
+                }
             } catch (IOException e) {
                 System.out.println("Couldn't create new scanning file.");
                 System.exit(0);
@@ -217,7 +220,7 @@ public class QuboServer {
                 String masterIP = IPUtils.getIP();
                 for (InetAddress ip : ips) {
                     int finalCount = count;
-                    ProcessBuilder ps = new ProcessBuilder("ssh", "-o", "StrictHostKeyChecking=no", "root@" + ip.getHostAddress(), "-i", "/root/.ssh/id_rsa", "-t", "screen", "-d", "-m", "java", "-jar", "Client.jar", masterIP, "VPS" + String.valueOf(finalCount));
+                    ProcessBuilder ps = new ProcessBuilder("ssh", "-o", "StrictHostKeyChecking=no", "root@" + ip.getHostAddress(), "-i", "/root/.ssh/id_rsa", "-t", "screen", "-d", "-m", "java", "-jar", "Client.jar", masterIP, "VPS" + finalCount);
                     try {
                         ps.start();
                     } catch (IOException e) {

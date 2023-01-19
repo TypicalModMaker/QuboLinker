@@ -1,10 +1,8 @@
 package dev.isnow.qubolinker;
 
 import dev.isnow.qubolinker.util.CIDRUtils;
-import dev.isnow.qubolinker.util.NewIPRangeSplitter;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;

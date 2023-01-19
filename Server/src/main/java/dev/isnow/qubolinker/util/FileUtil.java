@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,7 +15,7 @@ public class FileUtil {
     public void writeSplash(File file) {
         PrintWriter writer = null;
         try {
-            writer = new PrintWriter(file, "UTF-8");
+            writer = new PrintWriter(file, StandardCharsets.UTF_8);
         } catch (FileNotFoundException e) {
             // wtf?
             e.printStackTrace();

@@ -74,7 +74,7 @@ public class ClientListener {
                                     String ip = message.split("ip: ")[1].split(" -")[0];
                                     String percentage = message.split(" - \\(")[1].split("\\)")[0];
                                     System.out.println("[STATUS] " + clientQubo.get().getName() + " - Current IP: " + ip + " Percentage: " + percentage);
-                                } catch (Exception ignored) {};
+                                } catch (Exception ignored) {}
                             });
                             break;
                         case -1:
