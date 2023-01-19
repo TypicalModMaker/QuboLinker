@@ -214,7 +214,7 @@ public class QuboServer {
                         throw new RuntimeException(e);
                     }
                     try {
-                        Thread.sleep(300);
+                        Thread.sleep(100);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -249,7 +249,7 @@ public class QuboServer {
 
             Thread scanThread = new Thread(() -> {
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(400);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
