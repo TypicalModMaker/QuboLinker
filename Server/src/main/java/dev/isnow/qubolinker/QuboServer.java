@@ -96,6 +96,7 @@ public class QuboServer {
                 System.out.println("IPRange cant contain any spaces!");
                 System.exit(0);
             }
+            boolean singleShit = false;
             if (ipRangeInput.toString().contains("/")) {
                 if (ipRangeInput.toString().contains(",")) {
                     List<String> split = new ArrayList<>(Arrays.asList(ipRangeInput.toString().split(",")));
@@ -114,14 +115,18 @@ public class QuboServer {
                     try {
                         CIDRUtils converted = new CIDRUtils(ipRangeInput.toString());
                         ipRangeInput = new StringBuilder(converted.getNetworkAddress() + "-" + converted.getBroadcastAddress());
+                        singleShit = true;
                     } catch (UnknownHostException exception) {
                         System.out.println("INVALID CIDR");
                         System.exit(0);
                     }
                 }
             }
-            ipRangeInput.setLength(ipRangeInput.length() - 1);
 
+            if(!singleShit) {
+                ipRangeInput.append(ipRangeInput.length() - 1);
+            }
+            System.out.println("[DEBUG] Converted to " + ipRangeInput);
             ArrayList<String> scanips = new ArrayList<>();
             if (!ipRangeInput.toString().contains(",")) {
                 scanips.add(ipRangeInput.toString());
@@ -129,7 +134,12 @@ public class QuboServer {
                 scanips.addAll(Arrays.asList(ipRangeInput.toString().split(",")));
             }
 
-            scanningFile = new File(outputFolder, "qubolinker-" + scanips.get(0) + "-" + scanips.get(scanips.size() - 1) + ".txt");
+            if(singleShit) {
+                scanningFile = new File(outputFolder, "qubolinker-" + scanips.get(0).split("-")[0] + "-" + scanips.get(scanips.size() - 1).split("-")[1]);
+            } else {
+                scanningFile = new File(outputFolder, "qubolinker-" + scanips.get(0).split("-")[0] + "-" + scanips.get(scanips.size() - 2).split("-")[1]);
+            }
+
             try {
                 scanningFile.delete();
                 scanningFile.createNewFile();
@@ -214,7 +224,7 @@ public class QuboServer {
                         throw new RuntimeException(e);
                     }
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(250);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -249,7 +259,7 @@ public class QuboServer {
 
             Thread scanThread = new Thread(() -> {
                 try {
-                    Thread.sleep(400);
+                    Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
